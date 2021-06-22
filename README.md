@@ -1,6 +1,13 @@
-# 🏗 scaffold-eth
+# 🐶 the-kind-project
 
-> is everything you need to get started building decentralized applications on Ethereum! 🚀
+The Kind Project is a decentralized charity platform for transparent crowdfunding from DeFi in exchange for Proofs of Charity NFTs.
+
+---
+
+## Dependencies
+
+* NodeJS v16.3.0
+* React 16.14.0
 
 ---
 
