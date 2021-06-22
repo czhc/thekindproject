@@ -1,6 +1,6 @@
 # ღ the-kind-project ღ
 
-![./assets/kind-sq.png]
+![Kind Logo](./assets/kind-sq.png)
 
 The Kind Project is building a platform to simplify, incentivize and gamify acts of charity in the DeFi economy. We believe that giving should be:
 
