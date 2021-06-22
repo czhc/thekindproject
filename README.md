@@ -1,4 +1,4 @@
-# 🐶 the-kind-project
+# ღ the-kind-project ღ
 
 The Kind Project is a decentralized charity platform for transparent crowdfunding from DeFi in exchange for Proofs of Charity NFTs.
 
