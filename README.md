@@ -4,9 +4,8 @@
 
 The Kind Project is building a platform to simplify, incentivize and gamify acts of charity in the DeFi economy. We believe that giving should be:
 
-- accessible: give to causes that are not physically accessible to you
+- simple: accessible for contributions in any protocol, amount and form 
 - transparent: all participants in a social cause are visible and accountable
-- gracious: donors give with no expectation of tangible returns
 - sociable: the community builds intangible value on proofs of donations
 - fun!
 
