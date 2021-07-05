@@ -3,12 +3,14 @@ const fs = require("fs");
 const chalk = require("chalk");
 
 require("@nomiclabs/hardhat-waffle");
-require("@tenderly/hardhat-tenderly");
+// require("@tenderly/hardhat-tenderly");
 
 require("hardhat-deploy");
 
-require("@eth-optimism/hardhat-ovm");
+// require("@eth-optimism/hardhat-ovm");
 require("@nomiclabs/hardhat-ethers");
+require('@nomiclabs/hardhat-etherscan');
+require('@openzeppelin/hardhat-upgrades');
 
 const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 
@@ -165,16 +167,7 @@ module.exports = {
   solidity: {
     compilers: [
       {
-        version: "0.7.6",
-        settings: {
-          optimizer: {
-            enabled: true,
-            runs: 200,
-          },
-        },
-      },
-      {
-        version: "0.6.7",
+        version: "0.8.6",
         settings: {
           optimizer: {
             enabled: true,
@@ -184,9 +177,9 @@ module.exports = {
       },
     ],
   },
-  ovm: {
-    solcVersion: "0.7.6",
-  },
+  // ovm: {
+  //   solcVersion: "0.7.6",
+  // },
   namedAccounts: {
     deployer: {
       default: 0, // here this will by default take the first account as deployer
