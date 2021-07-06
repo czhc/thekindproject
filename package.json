@@ -16,6 +16,7 @@
     "react-app:test": "yarn workspace @kind-project/react-app test",
     "build": "yarn workspace @kind-project/react-app build --max-old-space-size=12288",
     "chain": "yarn workspace @kind-project/hardhat chain",
+    "console": "yarn workspace @kind-project/hardhat console",
     "fork": "yarn workspace @kind-project/hardhat fork",
     "node": "yarn workspace @kind-project/hardhat chain",
     "test": "yarn workspace @kind-project/hardhat test",
