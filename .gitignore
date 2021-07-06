@@ -13,7 +13,8 @@ packages/hardhat/.openzeppelin/
 packages/react-app/src/contracts/*
 !packages/react-app/src/contracts/external_contracts.js
 packages/hardhat/cache*
-
+packages/hardhat/contracts/artifacts/
+.deps/npm/
 packages/**/data
 packages/subgraph/config/config.json
 tenderly.yaml
