@@ -2,53 +2,87 @@
 pragma solidity >=0.8.0 <0.9.0;
 import '@openzeppelin/contracts/access/Ownable.sol';
 
-import './Charity.sol';
-
 contract CharityManager is Ownable {
-// manage Home lifecycle
-  enum CharityStatus { New, Verified, Deactivated }
+    // manage Home lifecycle
+    
+    address[] public cList;
+    mapping (uint => Charity) public charityMap;
+    uint index;
+    
+    event charityCreated(address cAddress);
+    event charityStatusChanged(uint id, Charity.Status status);
+    event charityUpdated();
+    event receivedDonation();
+    
+    function createCharity(string memory _name) public {
+        Charity c = new Charity(this, msg.sender, _name, index);
+        charityMap[index] = c;
+        cList.push(address(c));
+        index++;
+        emit charityCreated(address(c));
+        
+    }
 
-  struct C_Item {
-    Charity _charity;
-    uint _id;
-    CharityManager.CharityStatus _status;
-  }
+    function verifyCharity(uint _id) public {
+        emit charityStatusChanged(_id, Charity.Status.Verified);
+    }
 
-  struct Donor {
-    address addr;
-    uint256 ammount;
-  }
+}
 
-  mapping(uint => C_Item) public charities;
-  uint index;
+contract Charity {
+//controlled by Home/beneficiary entity
+    enum Status { New, Verified, Deactivated }
+    
+    struct Donor {
+        address addr;
+        uint256 ammount;
+    }
 
-  event charityAdded(uint index, address toAdd);
-  event charityStatusChanged(uint id, CharityStatus status);
-  event charityUpdated(address oldAddress, string name);
+    address payable public owner;
+    string public name;
+    uint public index;
+    CharityManager manager;
+    Status public status;        
 
-  function addCharity(string memory _name) public {
+    uint256 public balance;
 
-    Charity charity = new Charity(this, payable(msg.sender), _name, index);
-    charities[index]._charity = charity;
-    charities[index]._id = index;
-    charities[index]._status = CharityStatus.New;
-    index++;
+    event fundWithdrawn(address _to, uint256 _amount);
+    event fundReceived(address _from, uint256 _amount);
+    
+    constructor(CharityManager _manager, address _wallet, string memory _name, uint _index) {
+        manager = _manager;
+        owner = payable(_wallet);
+        name = _name;
+        index = _index;
+        status = Status.New;
+    }
 
-    emit charityAdded(index, msg.sender);
-  }
+    function verify() public {
+        require(msg.sender == manager.owner(), "Unauthorized");
+        status = Status.Verified;
+        manager.verifyCharity(index);
+    }
 
-  function verifyCharity(uint _id) public onlyOwner {
-    charities[_id]._status = CharityStatus.Verified;
-    emit charityStatusChanged(_id, charities[_id]._status);
-  }
 
-  function deactivateCharity(uint _id) public onlyOwner{
-    charities[_id]._status = CharityStatus.Deactivated;
-    emit charityStatusChanged(_id, charities[_id]._status);
-  }
+    function withdraw(uint256 amount) public payable {
+        require(msg.sender == owner, "Unauthorized");
+        require(balance >= amount, "Insufficient balance");
+        owner.transfer(amount);
+        emit fundWithdrawn(owner, msg.value);
+    }
 
-  function donateTo(uint _charity, uint256 _amount) public {
-    // donate to charity
-  }
+    function withdrawAll() public payable {
+        withdraw(balance);
+    }
+    
+    receive() external payable {
+        require(status == Status.Verified, "Charity is not Verified");
+        balance += msg.value;
+        emit fundReceived(msg.sender, msg.value);
+    }
+
+    fallback() external {
+        
+    }
 
 }
