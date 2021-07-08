@@ -1,4 +1,5 @@
 const { expect }  = require('chai');
+const { smockit } = require('@eth-optimism/smock');
 
 describe('CharityManager', function(){
   let owner, char1, char2, user;
@@ -79,6 +80,15 @@ describe('CharityManager', function(){
     })
 
 
+    it('asserts charity is Verified', async() =>{
+      // mocks verifyCharity to test silent errors on Charity.verify()
+      const mockCharity = await smockit(this.charity);
+      mockCharity.smocked.status.will.return.with(0);
+
+      await expect(
+         this.manager.verifyCharity(mockCharity.address)
+        ).to.be.reverted; //from assert(_c.status())
+    })
   })
 
 })
