@@ -1,129 +1,84 @@
 const { expect }  = require('chai');
-const { MockProvider } = require('ethereum-waffle');
 
 describe('CharityManager', function(){
   let owner, char1, char2, user;
 
-  before(async function(){
-    this.CharityManager = await ethers.getContractFactory('CharityManager');
-    this.Charity  = await ethers.getContractFactory('Charity');
-    // this.provider = new MockProvider();
-  });
-
-  beforeEach(async function(){
-    this.manager = await this.CharityManager.deploy();
-    await this.manager.deployed();
+  before (async() => {
     [owner, char1, char2, user1] = await ethers.getSigners();
-
+    this.ManagerFactory = await ethers.getContractFactory('CharityManager');
+    this.CharityFactory = await ethers.getContractFactory('Charity');
   })
 
-  describe('addCharity', function(){
-    describe('creates Charity', function(){
-      let char;
-      beforeEach(async function(){
-        let txn = await this.manager.addCharity('Charity #1');
-        console.log('txn.to: ', txn.to);
-        char = await this.Charity.attach(txn.to);
-        console.log('char: ', await(char.name()));
+  beforeEach(async()=>{
+    this.manager = await this.ManagerFactory.deploy();
+    await this.manager.deployed();
+  })
+
+  describe('createCharity', async()=>{
+    describe('with attributes', async()=>{
+      beforeEach(async()=>{
+        await this.manager.connect(char1).createCharity('Charity #1');
+        let charityAdd =  await this.manager.charityMap(0);
+        this.charity = await this.CharityFactory.attach(charityAdd);
       })
-      it ('with name', async function(){
-        console.log('DEBUG char: ', char);
-        expect(await char.name()).to.equal('Charity #1');
+      it('with given name', async()=>{
+        expect(await this.charity.name()).to.equal('Charity #1');
       })
-      it ('with sender wallet', async function(){
-        expect(char.wallet).to.equal(owner.address);
+      it('with msg origin as Charity owner ', async() =>{
+        expect(await this.charity.getOwner()).to.equal(char1.address);
       })
-      it ('with index', async function(){
-        expect(char.index).to.equal(0);
+      it('with index', async() => {
+        expect(await this.charity.index()).to.equal(0);
       })
-      // it ('increments index', async function(){
-      //   await expect(
-      //     this.manager.addCharity('Charity #1')
-      //     ).to.increase(this.manager.index).by(1);
-      // })
+      it('pushes charity address to list', async()=>{
+        let list = await this.manager.getCharityList();
+        expect(list.length).to.equal(1);
+        expect(list).to.include(this.charity.address.toString());
+      })
+      it('increments manager.index', async()=>{
+        expect(await this.manager.index()).to.equal(1);
+      })
+      it('emits CharityCreated', async()=> {
+        await expect(this.manager.createCharity('foo'))
+          .to.emit(this.manager, 'CharityCreated');
+      })
     })
-    // it('accepts new addresses', async function(){
-    //   await this.manager.addHome(char1.address);
-    //   expect(await this.manager.charities(char1.address)).to.be.true;
-    // })
-
-    // it('rejects existing addresses', async function(){
-    //   await this.manager.addHome(char1.address);
-    //   await expect(this.manager.addHome(char1.address)).to.be.reverted;
-    // })
-
-    // it('requires Owner', async function(){
-    //   await expect (this.manager.addHome(char1.address, { from: user1})).to.be.reverted;
-    // })
-
-    // it('emits homeAdded', async function(){
-    //   await expect (this.manager.addHome(char1.address)).to.emit(this.manager, 'homeAdded');
-    // })
-    // it('creates new Charity', async function(){
-
-    //   expect(this.manager.charities(0))
-    // })
-
-    // it('creates new Charity with msg.sender as owner', async function(){
-
-    // })
-
-    // it ('creates new Charity with index', async function(){
-
-    // })
-
-    // it ('creates new Charity as new', async function(){
-
-    // })
-
-    // it ('emits event charityAdded', async function(){
-
-    // })
-
-
-    // it('requires Owner', async function(){
-    //   // await expect (this.manager.addHome(char1.address, { from: user1})).to.be.reverted;
-    // })
-
-    // it('emits homeAdded', async function(){
-    //   // await expect (this.manager.addHome(char1.address)).to.emit(this.manager, 'homeAdded');
-    // })
 
   })
 
+  describe('verifyCharity', async()=>{
+    beforeEach(async()=>{
+      await this.manager.connect(char1).createCharity('Charity #1');
+      let charityAdd =  await this.manager.charityMap(0);
+      this.charity = await this.CharityFactory.attach(charityAdd);
+    })
 
-  describe('deleteHome', function(){
+    it('should allow manager owner', async()=>{
+      await expect(
+        this.manager.connect(owner)
+          .verifyCharity(this.charity.address)
+      ).to.not.be.reverted;
+    })
 
-    // beforeEach(async function(){
-    //   await this.manager.addHome(char1.address);
-    // })
+    it('should not allow charity owner', async()=>{
+      await expect(
+        this.manager.connect(char1)
+          .verifyCharity(this.charity.address)
+      ).to.be.reverted;
+    })
 
-    // it('removes address', async function(){
-    //   await this.manager.deleteHome(char1.address);
-    //   expect(await this.manager.charities(char1.address)).to.be.false;
-    // })
+    // tests for Charity.verify() in Charity suite
+
+    it('emits CharityVerified', async()=> {
+      await expect(
+        this.manager
+          .verifyCharity(this.charity.address)
+        ).to
+        .emit(this.manager, 'CharityStatusChanged')
+        .withArgs(this.charity.address, 1); //1 = Verified
+    })
 
 
-    // it('requires Owner', async function(){
-    //   await expect (this.manager.deleteHome(char1.address, { from: user1})).to.be.reverted;
-    // })
-
-    // it('emits homeDeleted', async function(){
-    //   await expect (this.manager.deleteHome(char1.address)).to.emit(this.manager, 'homeDeleted');
-    // })
   })
 
-  // it('retrieve returns a value previously stored', async function(){
-  //   await this.box.setValue(42);
-  //   expect(await this.box.getValue()).to.equal(42);
-  // })
-
-  // it('emits event ValueChanged', async function(){
-  //   await expect(this.box.setValue(42)).to.emit(this.box, 'ValueChanged');
-  // })
-
-  // it('reverts when unauthorized', async function(){
-  //   const [owner, addr1] = await ethers.getSigners();
-  //   await expect(this.box.setValue(100, { from: addr1 })).to.be.reverted;
-  // })
 })
