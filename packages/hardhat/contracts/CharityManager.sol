@@ -1,36 +1,43 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
-import '@openzeppelin/contracts/access/Ownable.sol';
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract CharityManager is Ownable {
     // manage Home lifecycle
     
     address[] public cList;
     mapping (uint => Charity) public charityMap;
-    uint index;
+    uint public index;
     
-    event charityCreated(address cAddress);
-    event charityStatusChanged(uint id, Charity.Status status);
-    event charityUpdated();
-    event receivedDonation();
+    event CharityCreated(address cAddress);
+    event CharityStatusChanged(address cAddress, Charity.Status status);
+    event CharityUpdated();
+    event DonationReceived();
     
+    function getCharityList() public view returns (address[] memory){
+        return cList;
+    }
+
     function createCharity(string memory _name) public {
-        Charity c = new Charity(this, msg.sender, _name, index);
+        Charity c = new Charity(this, address(msg.sender), _name, index);
         charityMap[index] = c;
         cList.push(address(c));
         index++;
-        emit charityCreated(address(c));
+        emit CharityCreated(address(c));
         
     }
 
-    function verifyCharity(uint _id) public {
-        emit charityStatusChanged(_id, Charity.Status.Verified);
+    function verifyCharity(address cAddress) public onlyOwner {
+        Charity _c = Charity(payable(cAddress));
+        emit CharityStatusChanged(cAddress, Charity.Status.Verified);
+        _c.verify();
+        assert(_c.status() == Charity.Status.Verified);
     }
 
 }
 
 contract Charity {
-//controlled by Home/beneficiary entity
+    //controlled by Home/beneficiary entity
     enum Status { New, Verified, Deactivated }
     
     struct Donor {
