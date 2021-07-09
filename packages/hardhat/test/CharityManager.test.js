@@ -1,9 +1,10 @@
 const { expect }  = require('chai');
 const { smockit } = require('@eth-optimism/smock');
-const { getEventResponse, echo } = require('./utils');
+const { getEventResponse } = require('./utils');
 
 describe('CharityManager', function(){
-  let owner, char1, char2, user;
+  let owner, char1, char2, user1;
+
   before (async() => {
     [owner, char1, char2, user1] = await ethers.getSigners();
     this.ManagerFactory = await ethers.getContractFactory('CharityManager');

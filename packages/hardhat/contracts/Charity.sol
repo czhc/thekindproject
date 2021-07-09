@@ -58,7 +58,7 @@ contract Charity {
         require(balance >= amount, "Insufficient balance");
         balance -= amount;
         payable(owner).transfer(amount);
-        emit FundWithdrawn(owner, msg.value);
+        emit FundWithdrawn(owner, amount);
     }
 
     function withdrawAll() public payable {
