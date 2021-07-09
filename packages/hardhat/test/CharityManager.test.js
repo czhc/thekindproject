@@ -51,6 +51,9 @@ describe('CharityManager', function(){
 
   })
 
+
+
+
   describe('verifyCharity', async()=>{
     beforeEach(async()=>{
       await this.manager.connect(char1).createCharity('Charity #1');
@@ -95,4 +98,57 @@ describe('CharityManager', function(){
     })
   })
 
+
+  describe('donateTo', async()=> {
+    beforeEach(async()=>{
+      await this.manager.connect(char1).createCharity('Charity #1');
+      let charityAdd =  await this.manager.charityMap(1);
+      this.charity = await this.CharityFactory.attach(charityAdd);
+      await this.manager.verifyCharity(this.charity.address);
+    })
+
+    it('reverts on non-Charity address', async() => {
+      await expect(
+        this.manager.donateTo(
+          ethers.constants.AddressZero,
+          { value: 100 }
+          )
+        ).to.be.revertedWith('Charity does not exist')
+    })
+
+    it('emits DonationReceived', async() => {
+      await expect(
+        this.manager
+          .connect(user1)
+          .donateTo(this.charity.address, { value: 101})
+        ).to
+        .emit(this.manager, 'DonationReceived')
+        .withArgs(user1.address, this.charity.address, 101);
+    })
+
+    /**
+     * TODO: add test to mock Charity call/receive and assert manager reverts donateTo
+     * STATUS: pending confirmation from smock team
+     * ISSUE: https://github.com/ethereum-optimism/optimism/issues/1245
+     *
+    it('reverts on unsuccessful transfer', async() => {
+      // mocks Charity.receive to return a false scenario
+      const mockManager = await smockit(this.manager);
+      const mockCharity = await smockit(this.charity);
+
+      console.log('mockCharity: ', mockCharity);
+      console.log('mockCharity.status: ', await mockCharity.status());
+
+      mockManager.smocked.charityExists.will.return.with(true);
+      // smocked does not stub call or receive yet
+      mockCharity.smocked.status.will.return.with(0);
+
+      await expect(
+         mockManager
+           .connect(owner)
+           .donateTo(mockCharity.address, {value: 102})
+        ).to.be.revertedWith('Failed to send funds') //from assert(_c.status())
+    })
+    **/
+  })
 })
