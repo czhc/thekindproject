@@ -1,4 +1,4 @@
-# ღ the-kind-project ღ
+# the KIND project
 
 ![Kind Logo](./assets/kind_light.png)
 
