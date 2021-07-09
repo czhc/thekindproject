@@ -1,27 +1,30 @@
 const { expect }  = require('chai');
 const { smockit } = require('@eth-optimism/smock');
+const { getEventResponse, echo } = require('./utils');
 
 describe('CharityManager', function(){
   let owner, char1, char2, user;
-
   before (async() => {
     [owner, char1, char2, user1] = await ethers.getSigners();
     this.ManagerFactory = await ethers.getContractFactory('CharityManager');
     this.CharityFactory = await ethers.getContractFactory('Charity');
-  })
-
-  beforeEach(async()=>{
     this.manager = await this.ManagerFactory.deploy();
     await this.manager.deployed();
+
+    this.charity = await this.CharityFactory.attach(
+                      await getEventResponse(
+                        await this.manager
+                                .connect(char1)
+                                .createCharity('Charity #1'),
+                        'cAddress'
+                      )
+                   );
+
   })
+
 
   describe('createCharity', async()=>{
     describe('with attributes', async()=>{
-      beforeEach(async()=>{
-        await this.manager.connect(char1).createCharity('Charity #1');
-        let charityAdd =  await this.manager.charityMap(1);
-        this.charity = await this.CharityFactory.attach(charityAdd);
-      })
       it ('does not start from reserved index 0', async()=>{
         let cNull = await this.manager.charityMap(0);
         expect(cNull.address).to.equal(undefined);
@@ -51,16 +54,7 @@ describe('CharityManager', function(){
 
   })
 
-
-
-
   describe('verifyCharity', async()=>{
-    beforeEach(async()=>{
-      await this.manager.connect(char1).createCharity('Charity #1');
-      let charityAdd =  await this.manager.charityMap(1);
-      this.charity = await this.CharityFactory.attach(charityAdd);
-    })
-
     it('should allow manager owner', async()=>{
       await expect(
         this.manager.connect(owner)
@@ -98,12 +92,17 @@ describe('CharityManager', function(){
     })
   })
 
-
   describe('donateTo', async()=> {
-    beforeEach(async()=>{
-      await this.manager.connect(char1).createCharity('Charity #1');
-      let charityAdd =  await this.manager.charityMap(1);
-      this.charity = await this.CharityFactory.attach(charityAdd);
+    before(async()=>{
+      this.charity = await this.CharityFactory.attach(
+                        await getEventResponse(
+                          await this.manager
+                                  .connect(char1)
+                                  .createCharity('Verified Charity'),
+                          'cAddress'
+                        )
+                     );
+
       await this.manager.verifyCharity(this.charity.address);
     })
 
