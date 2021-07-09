@@ -7,7 +7,7 @@ contract CharityManager is Ownable {
     
     address[] public cList;
     mapping (uint => Charity) public charityMap;
-    uint public index;
+    uint public index = 1;
     
     event CharityCreated(address cAddress);
     event CharityStatusChanged(address cAddress, Charity.Status status);

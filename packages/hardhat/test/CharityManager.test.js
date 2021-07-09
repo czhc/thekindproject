@@ -19,8 +19,12 @@ describe('CharityManager', function(){
     describe('with attributes', async()=>{
       beforeEach(async()=>{
         await this.manager.connect(char1).createCharity('Charity #1');
-        let charityAdd =  await this.manager.charityMap(0);
+        let charityAdd =  await this.manager.charityMap(1);
         this.charity = await this.CharityFactory.attach(charityAdd);
+      })
+      it ('does not start from reserved index 0', async()=>{
+        let cNull = await this.manager.charityMap(0);
+        expect(cNull.address).to.equal(undefined);
       })
       it('with given name', async()=>{
         expect(await this.charity.name()).to.equal('Charity #1');
@@ -29,7 +33,7 @@ describe('CharityManager', function(){
         expect(await this.charity.getOwner()).to.equal(char1.address);
       })
       it('with index', async() => {
-        expect(await this.charity.index()).to.equal(0);
+        expect(await this.charity.index()).to.equal(1);
       })
       it('pushes charity address to list', async()=>{
         let list = await this.manager.getCharityList();
@@ -37,7 +41,7 @@ describe('CharityManager', function(){
         expect(list).to.include(this.charity.address.toString());
       })
       it('increments manager.index', async()=>{
-        expect(await this.manager.index()).to.equal(1);
+        expect(await this.manager.index()).to.equal(2);
       })
       it('emits CharityCreated', async()=> {
         await expect(this.manager.createCharity('foo'))
@@ -50,7 +54,7 @@ describe('CharityManager', function(){
   describe('verifyCharity', async()=>{
     beforeEach(async()=>{
       await this.manager.connect(char1).createCharity('Charity #1');
-      let charityAdd =  await this.manager.charityMap(0);
+      let charityAdd =  await this.manager.charityMap(1);
       this.charity = await this.CharityFactory.attach(charityAdd);
     })
 
