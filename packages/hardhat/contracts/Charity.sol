@@ -1,23 +1,29 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 import './CharityManager.sol';
+import './CharityToken.sol';
+import "./ERC1155TokenReceiver.sol";
+import "hardhat/console.sol";
 
-contract Charity {
+contract Charity is 
+    ERC1155TokenReceiver {
     //controlled by Home/beneficiary entity
     enum Status { New, Verified, Deactivated }
     
     struct Donor {
         address addr;
-        uint256 ammount;
+        uint256 amount;
     }
 
     CharityManager public manager;
     address payable private owner;
     string public name;
     uint public index;
+    uint public tokenIndex;
     Status public status;        
 
     uint256 public balance;
+    
 
     event FundWithdrawn(address _to, uint256 _amount);
     event FundReceived(address _from, uint256 _amount);
@@ -65,6 +71,12 @@ contract Charity {
         withdraw(address(this).balance);
     }
     
+    
+    function createCampaignTokens(uint256 _supply) external payable {
+        new CharityToken(tokenIndex, _supply);
+        tokenIndex++;
+    }
+
     receive() external payable {
         require(status == Status.Verified, "Charity is not Verified");
         balance += msg.value;
@@ -73,5 +85,6 @@ contract Charity {
 
     fallback() external payable{
     }
+
 
 }
