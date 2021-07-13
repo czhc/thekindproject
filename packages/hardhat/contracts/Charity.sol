@@ -23,7 +23,7 @@ contract Charity is
     Status public status;        
 
     uint256 public balance;
-    
+    mapping (uint256 => CharityToken) public charityTokensUintMapping; 
 
     event FundWithdrawn(address _to, uint256 _amount);
     event FundReceived(address _from, uint256 _amount);
@@ -72,8 +72,9 @@ contract Charity is
     }
     
     
-    function createCampaignTokens(uint256 _supply) external payable {
-        new CharityToken(tokenIndex, _supply);
+    function createCharityTokens(uint256 _supply) external onlyOwner {
+        CharityToken tokens = new CharityToken(tokenIndex, _supply);
+        charityTokensUintMapping[tokenIndex] = tokens;
         tokenIndex++;
     }
 
