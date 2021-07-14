@@ -6,8 +6,9 @@ import "hardhat/console.sol";
 
 contract CharityToken is ERC1155 {
     address public charity;
-    constructor(uint256 _id, uint256 _initialSupply) ERC1155("") {
+    constructor(uint256 _id, uint256 _initialSupply, address _aManager) ERC1155("") {
         charity = msg.sender;
         _mint(msg.sender, _id, _initialSupply, "");
+        setApprovalForAll(_aManager, true);
     }
 }

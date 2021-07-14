@@ -3,7 +3,6 @@ pragma solidity >=0.8.0 <0.9.0;
 import './CharityManager.sol';
 import './CharityToken.sol';
 import "./ERC1155TokenReceiver.sol";
-import "hardhat/console.sol";
 
 contract Charity is 
     ERC1155TokenReceiver {
@@ -23,7 +22,7 @@ contract Charity is
     Status public status;        
 
     uint256 public balance;
-    mapping (uint256 => CharityToken) public charityTokensUintMapping; 
+    mapping (uint256 => address) public charityTokensUintAddrMapping;
 
     event FundWithdrawn(address _to, uint256 _amount);
     event FundReceived(address _from, uint256 _amount);
@@ -73,13 +72,26 @@ contract Charity is
     
     
     function createCharityTokens(uint256 _supply) external onlyOwner {
-        CharityToken tokens = new CharityToken(tokenIndex, _supply);
-        charityTokensUintMapping[tokenIndex] = tokens;
+        CharityToken tokens = new CharityToken(tokenIndex, _supply, address(manager));
+        charityTokensUintAddrMapping[tokenIndex] = address(tokens);
         tokenIndex++;
     }
 
+    function getActiveTokenIndexOrDefault(uint256 _index) internal view returns (uint256) {
+        if (charityTokensUintAddrMapping[_index] == address(0)){
+            return tokenIndex - 1; //last active campaign
+        } else {
+            return _index; //returns known campaign
+        }
+    }
+
+    function transferTokensFor(address _to, uint256 _value, uint256 _index) public { //TODO: onlyManager
+        uint256 sendTokenIndex = getActiveTokenIndexOrDefault(_index);
+        CharityToken tokens = CharityToken(charityTokensUintAddrMapping[sendTokenIndex]);
+        tokens.safeTransferFrom(address(this), _to, sendTokenIndex, 1, ""); //transfer latest token for now
+    }
+
     receive() external payable {
-        require(status == Status.Verified, "Charity is not Verified");
         balance += msg.value;
         emit FundReceived(msg.sender, msg.value);
     }
