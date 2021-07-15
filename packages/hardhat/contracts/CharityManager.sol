@@ -2,6 +2,7 @@
 pragma solidity >=0.8.0 <0.9.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 import "./Charity.sol";
 import "./CharityToken.sol";
@@ -49,16 +50,15 @@ contract CharityManager is Ownable {
 
 
     function donateTo(address _cAddress, uint256 _tokenIndex) public payable {
-        // validate charity exists
         (bool exists, Charity charity) = charityExists(_cAddress);
         require(exists, "Charity does not exist");
+
         // moved out of Charity. minimize logic in receive()
         require(charity.status() == Charity.Status.Verified, "Charity is not Verified");
 
         emit DonationReceived(msg.sender, _cAddress, msg.value);
 
-        (bool success,) = payable(_cAddress).call{value: msg.value}(""); //should throw on fail
-        require(success, "Fund transfer failed");
+        Address.sendValue(payable(_cAddress), msg.value); // OZ replacement for transfer()
         charity.transferTokensFor(msg.sender, msg.value, _tokenIndex);
     }
 
