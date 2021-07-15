@@ -1,14 +1,15 @@
 //SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
 import "./Charity.sol";
 import "./CharityToken.sol";
-import  "hardhat/console.sol";
 
-contract CharityManager is Ownable {
+contract CharityManager is
+            Ownable,
+            ReentrancyGuard {
     // manage Home lifecycle
     
     address[] public cList;
@@ -22,12 +23,12 @@ contract CharityManager is Ownable {
     event Log(string message);
     event LogBytes(bytes data);
 
-    function getCharityList() public view returns (address[] memory){
+    function getCharityList() external view returns (address[] memory){
         return cList;
     }
 
-    function createCharity(string memory _name) public {
-        Charity c = new Charity(this, address(msg.sender), _name, index);
+    function createCharity(string memory name) external {
+        Charity c = new Charity(this, address(msg.sender), name, index);
         charityMap[index] = c;
         idMap[c] = index;
         cList.push(address(c));
@@ -36,30 +37,29 @@ contract CharityManager is Ownable {
         
     }
 
-    function verifyCharity(address _cAddress) public onlyOwner {
-        Charity _c = Charity(payable(_cAddress));
-        emit CharityStatusChanged(_cAddress, Charity.Status.Verified);
+    function verifyCharity(address cAddress) external onlyOwner {
+        Charity _c = Charity(payable(cAddress));
+        emit CharityStatusChanged(cAddress, Charity.Status.Verified);
         _c.verify();
         assert(_c.status() == Charity.Status.Verified);
     }
 
-    function charityExists(address _cAddress) public view returns (bool, Charity) {
-        Charity _c = Charity(payable(_cAddress));
+    function charityExists(address cAddress) public view returns (bool, Charity) {
+        Charity _c = Charity(payable(cAddress));
         return (idMap[_c]>0, _c);
     }
 
 
-    function donateTo(address _cAddress, uint256 _tokenIndex) public payable {
-        (bool exists, Charity charity) = charityExists(_cAddress);
+    function donateTo(address cAddress, uint256 tokenIndex) external payable nonReentrant {
+        (bool exists, Charity charity) = charityExists(cAddress);
         require(exists, "Charity does not exist");
-
         // moved out of Charity. minimize logic in receive()
         require(charity.status() == Charity.Status.Verified, "Charity is not Verified");
 
-        emit DonationReceived(msg.sender, _cAddress, msg.value);
+        emit DonationReceived(msg.sender, cAddress, msg.value);
 
-        Address.sendValue(payable(_cAddress), msg.value); // OZ replacement for transfer()
-        charity.transferTokensFor(msg.sender, msg.value, _tokenIndex);
+        charity.transferTokensFor(msg.sender, tokenIndex);
+        Address.sendValue(payable(cAddress), msg.value); // OZ replacement for transfer()
     }
 
 }

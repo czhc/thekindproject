@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity ^0.8.0;
 import './CharityManager.sol';
 import './CharityToken.sol';
 import "./ERC1155TokenReceiver.sol";
@@ -24,14 +24,15 @@ contract Charity is
     uint256 public balance;
     mapping (uint256 => address) public charityTokensUintAddrMapping;
 
-    event FundWithdrawn(address _to, uint256 _amount);
+    event FundWithdrawn(address to, uint256 _amount);
     event FundReceived(address _from, uint256 _amount);
     
-    constructor(CharityManager _manager, address _wallet, string memory _name, uint _index) payable {
-        manager = _manager;
-        owner = payable(_wallet);
-        name = _name;
-        index = _index;
+    constructor(CharityManager manager_, address wallet, string memory name_, uint index_) payable {
+        require(wallet != address(0), "Wallet must be valid");
+        manager = manager_;
+        owner = payable(wallet);
+        name = name_;
+        index = index_;
         status = Status.New;
     }
 
@@ -51,44 +52,45 @@ contract Charity is
         _;
     }
 
-    function getOwner() public view returns (address) {
+    function getOwner() external view returns (address) {
         return owner;
     }
 
-    function verify() public onlyManager {
+    function verify() external onlyManager {
         status = Status.Verified;
     }
 
     function withdraw(uint256 amount) public payable onlyOwner {
         require(balance >= amount, "Insufficient balance");
         balance -= amount;
-        payable(owner).transfer(amount);
         emit FundWithdrawn(owner, amount);
+        payable(owner).transfer(amount);
     }
 
-    function withdrawAll() public payable {
+    function withdrawAll() external payable {
         withdraw(address(this).balance);
     }
     
     
-    function createCharityTokens(uint256 _supply) external onlyOwner {
-        CharityToken tokens = new CharityToken(tokenIndex, _supply, address(manager));
-        charityTokensUintAddrMapping[tokenIndex] = address(tokens);
+    function createCharityTokens(uint256 supply) external onlyOwner {
+        uint256 _currentIndex = tokenIndex;
         tokenIndex++;
+        CharityToken tokens = new CharityToken(_currentIndex, supply, address(manager));
+        charityTokensUintAddrMapping[tokenIndex] = address(tokens);
     }
 
-    function getActiveTokenIndexOrDefault(uint256 _index) internal view returns (uint256) {
-        if (charityTokensUintAddrMapping[_index] == address(0)){
+    function getActiveTokenIndexOrDefault(uint256 index_) internal view returns (uint256) {
+        if (charityTokensUintAddrMapping[index_] == address(0)){
             return tokenIndex - 1; //last active campaign
         } else {
-            return _index; //returns known campaign
+            return index_; //returns known campaign
         }
     }
 
-    function transferTokensFor(address _to, uint256 _value, uint256 _index) public { //TODO: onlyManager
-        uint256 sendTokenIndex = getActiveTokenIndexOrDefault(_index);
+    function transferTokensFor(address to, uint256 index_) external onlyManager {
+        uint256 sendTokenIndex = getActiveTokenIndexOrDefault(index_);
         CharityToken tokens = CharityToken(charityTokensUintAddrMapping[sendTokenIndex]);
-        tokens.safeTransferFrom(address(this), _to, sendTokenIndex, 1, ""); //transfer latest token for now
+        tokens.safeTransferFrom(address(this), to, sendTokenIndex, 1, ""); //transfer latest token for now
     }
 
     receive() external payable {
