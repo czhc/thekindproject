@@ -1,6 +1,5 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
-import './Charity.sol';
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
 contract CharityToken is ERC1155 {

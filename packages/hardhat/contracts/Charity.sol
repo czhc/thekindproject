@@ -4,9 +4,11 @@ pragma solidity ^0.8.0;
 import './CharityManager.sol';
 import './CharityToken.sol';
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract Charity is 
     ERC1155Holder,
+    ReentrancyGuard {
     //controlled by Home/beneficiary entity
     enum Status { New, Verified, Deactivated }
     
@@ -73,11 +75,10 @@ contract Charity is
     }
     
     
-    function createCharityTokens(uint256 supply) external onlyOwner {
-        uint256 _currentIndex = tokenIndex;
-        tokenIndex++;
-        CharityToken tokens = new CharityToken(_currentIndex, supply, address(manager));
+    function createCharityTokens(uint256 supply) external nonReentrant onlyOwner {
+        CharityToken tokens = new CharityToken(tokenIndex, supply, address(manager));
         charityTokensUintAddrMapping[tokenIndex] = address(tokens);
+        tokenIndex++;
     }
 
     function getActiveTokenIndexOrDefault(uint256 index_) internal view returns (uint256) {
