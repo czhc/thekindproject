@@ -30,7 +30,9 @@ contract Charity is
     event FundWithdrawn(address to, uint256 _amount);
     event FundReceived(address _from, uint256 _amount);
     
-    constructor(CharityManager manager_, address wallet, string memory name_, uint index_) payable {
+    constructor(CharityManager manager_, address wallet, string memory name_, uint index_)
+        payable
+    {
         require(wallet != address(0), "Wallet must be valid");
         manager = manager_;
         owner = payable(wallet);
@@ -55,33 +57,54 @@ contract Charity is
         _;
     }
 
-    function getOwner() external view returns (address) {
+    function getOwner()
+        external
+        view
+        returns (address)
+    {
         return owner;
     }
 
-    function verify() external onlyManager {
+    function verify()
+        external
+        onlyManager
+    {
         status = Status.Verified;
     }
 
-    function withdraw(uint256 amount) public payable onlyOwner {
+    function withdraw(uint256 amount)
+        public
+        payable
+        onlyOwner
+    {
         require(balance >= amount, "Insufficient balance");
         balance -= amount;
         emit FundWithdrawn(owner, amount);
         payable(owner).transfer(amount);
     }
 
-    function withdrawAll() external payable {
+    function withdrawAll()
+        external
+        payable
+    {
         withdraw(address(this).balance);
     }
     
     
-    function createCharityTokens(uint256 supply) external nonReentrant onlyOwner {
+    function createCharityTokens(uint256 supply)
+        external
+        onlyOwner
+    {
         CharityToken tokens = new CharityToken(tokenIndex, supply, address(manager));
         charityTokensUintAddrMapping[tokenIndex] = address(tokens);
         tokenIndex++;
     }
 
-    function getActiveTokenIndexOrDefault(uint256 index_) internal view returns (uint256) {
+    function getActiveTokenIndexOrDefault(uint256 index_)
+        internal
+        view
+        returns (uint256)
+    {
         if (charityTokensUintAddrMapping[index_] == address(0)){
             return tokenIndex - 1; //last active campaign
         } else {
@@ -89,13 +112,19 @@ contract Charity is
         }
     }
 
-    function transferTokensFor(address to, uint256 index_) external onlyManager {
+    function transferTokensFor(address to, uint256 index_)
+        external
+        onlyManager
+    {
         uint256 sendTokenIndex = getActiveTokenIndexOrDefault(index_);
         CharityToken tokens = CharityToken(charityTokensUintAddrMapping[sendTokenIndex]);
         tokens.safeTransferFrom(address(this), to, sendTokenIndex, 1, ""); //transfer latest token for now
     }
 
-    receive() external payable {
+    receive()
+        external
+        payable
+    {
         balance += msg.value;
         emit FundReceived(msg.sender, msg.value);
     }

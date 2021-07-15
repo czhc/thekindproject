@@ -4,7 +4,12 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
 contract CharityToken is ERC1155 {
     address public charity;
-    constructor(uint256 id, uint256 initialSupply, address _aManager) ERC1155("") {
+
+    constructor(
+        uint256 id,
+        uint256 initialSupply,
+        address _aManager
+    ) ERC1155("") {
         charity = msg.sender;
         _mint(msg.sender, id, initialSupply, "");
         setApprovalForAll(_aManager, true);
