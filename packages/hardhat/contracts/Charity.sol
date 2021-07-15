@@ -1,11 +1,12 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+
 import './CharityManager.sol';
 import './CharityToken.sol';
-import "./ERC1155TokenReceiver.sol";
+import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
 contract Charity is 
-    ERC1155TokenReceiver {
+    ERC1155Holder,
     //controlled by Home/beneficiary entity
     enum Status { New, Verified, Deactivated }
     
