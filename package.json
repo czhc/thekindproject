@@ -51,7 +51,9 @@
     "graph-ship-local": "yarn graph-prepare && yarn graph-codegen && yarn graph-deploy-local",
     "deploy-and-graph": "yarn deploy && yarn graph-ship-local",
     "theme": "yarn workspace @kind-project/react-app theme",
-    "watch-theme": "yarn workspace @kind-project/react-app watch"
+    "watch-theme": "yarn workspace @kind-project/react-app watch",
+    "slither": "yarn workspace @kind-project/hardhat slither",
+    "slither-format": "yarn workspace @kind-project/hardhat slither-format"
   },
   "workspaces": {
     "packages": [
