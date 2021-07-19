@@ -90,13 +90,14 @@ contract Charity is
         withdraw(address(this).balance);
     }
     
-    
-    function createCharityTokens(uint256 supply)
+    function createCharityTokens(string memory uri, uint256 supply)
         external
         onlyOwner
     {
-        CharityToken tokens = new CharityToken(tokenIndex, supply, address(manager));
+        // uri must contain substring {id}
+        CharityToken tokens = new CharityToken(address(manager), uri);
         charityTokensUintAddrMapping[tokenIndex] = address(tokens);
+        tokens.mint(address(this), tokenIndex, supply, "");
         tokenIndex++;
     }
 
