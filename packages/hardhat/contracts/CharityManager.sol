@@ -72,6 +72,7 @@ contract CharityManager is
         require(exists, "Charity does not exist");
         // moved out of Charity. minimize logic in receive()
         require(charity.status() == Charity.Status.Verified, "Charity is not Verified");
+        require(msg.value <= charity.donationCap(), "Value sent exceeds donation cap");
 
         emit DonationReceived(msg.sender, cAddress, msg.value);
 

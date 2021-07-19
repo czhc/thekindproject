@@ -25,6 +25,8 @@ contract Charity is
     Status public status;        
 
     uint256 public balance;
+    uint256 public donationCap = 2**256-1; //max possible value
+
     mapping (uint256 => address) public charityTokensUintAddrMapping;
 
     event FundWithdrawn(address to, uint256 _amount);
@@ -120,6 +122,11 @@ contract Charity is
         uint256 sendTokenIndex = getActiveTokenIndexOrDefault(index_);
         CharityToken tokens = CharityToken(charityTokensUintAddrMapping[sendTokenIndex]);
         tokens.safeTransferFrom(address(this), to, sendTokenIndex, 1, ""); //transfer latest token for now
+    }
+
+
+    function setDonationCap(uint256 amount) external onlyOwner {
+        donationCap = amount;
     }
 
     receive()
