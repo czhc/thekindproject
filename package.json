@@ -22,7 +22,6 @@
     "test": "yarn workspace @kind-project/hardhat test",
     "start": "yarn workspace @kind-project/react-app start",
     "compile": "yarn workspace @kind-project/hardhat compile",
-    "console": "yarn workspace @kind-project/hardhat console",
     "deploy": "yarn workspace @kind-project/hardhat deploy",
     "watch": "yarn workspace @kind-project/hardhat watch",
     "accounts": "yarn workspace @kind-project/hardhat accounts",
@@ -65,5 +64,6 @@
       "**/hardhat",
       "**/hardhat/**"
     ]
-  }
+  },
+  "dependencies": {}
 }

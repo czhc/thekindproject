@@ -48,7 +48,9 @@ module.exports = {
   // REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
   // (then your frontend will talk to your contracts on the live network!)
   // (you will need to restart the `yarn run start` dev server after editing the .env)
-
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY
+  },
   networks: {
     localhost: {
       url: "http://localhost:8545",
