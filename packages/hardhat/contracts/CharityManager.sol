@@ -33,6 +33,7 @@ contract CharityManager is
 
     function createCharity(string memory name)
         external
+        returns (address)
     {
         Charity c = new Charity(this, address(msg.sender), name, index);
         charityMap[index] = c;
@@ -40,7 +41,8 @@ contract CharityManager is
         cList.push(address(c));
         index++;
         emit CharityCreated(address(c));
-        
+
+        return address(c);
     }
 
     function verifyCharity(address cAddress)
